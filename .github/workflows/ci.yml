@@ -1,0 +1,70 @@
+name: Solidity based workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  format-lint:
+    name: Format and lint
+    runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/install-deps
+
+      - name: Formatting check Solidity
+        id: formatter-check-solidity
+        run: 	forge fmt --check src script test
+
+      - name: Linting Solidity
+        run: npx solhint '{src,script,test}/**/*.sol'
+
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ./.github/actions/install-deps
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+
+      - name: Run Forge tests
+        run: forge test -vvv
+  
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:      
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Analyze using Slither
+        uses: crytic/slither-action@v0.4.0
+        id: slither
+        with:
+          sarif: results.sarif
+          node-version: '20.10'
+          fail-on: none
+          slither-args: --checklist --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/

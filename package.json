@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "lint": "npx solhint {script,src,test}/**/*.sol"
+  },
+  "devDependencies": {
+    "solhint": "5.1.0",
+    "solhint-plugin-prettier": "0.1.0",
+    "surya": "0.4.12"
+  },
+  "dependencies": {
+    "forge": "^2.3.0",
+    "package.json": "^2.0.1"
+  }
+}
